@@ -2,7 +2,7 @@
  
 ### The program is provided for educational purposes!
 
-Simple keylogger CLI program with server and client. This utility can loggin key presses and sends data about it into server. Serer will save it in the "data" folder by sorting by files.
+Simple keylogger CLI program with server and client. This utility can logging key presses and sends data about it into server. Serer will save it in the "data" folder by sorting by files.
 
 ---------
 
